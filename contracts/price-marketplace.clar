@@ -119,3 +119,41 @@
     (<= (len name) maximum-product-name-length)
   )
 )
+
+(define-private (validate-marketplace-operational)
+  (var-get is-marketplace-operational)
+)
+
+(define-private (validate-owner-permissions)
+  (is-eq tx-sender (var-get marketplace-owner-address))
+)
+
+;; PRODUCT INFORMATION QUERIES
+
+(define-read-only (get-product-details (product-id uint))
+  (if (validate-product-identifier product-id)
+    (map-get? marketplace-product-catalog { product-identifier: product-id })
+    none
+  )
+)
+
+(define-read-only (get-applicable-volume-discount
+    (product-id uint)
+    (purchase-quantity uint)
+  )
+  (if (and (validate-product-identifier product-id) (validate-quantity-amount purchase-quantity))
+    (default-to {
+      discount-percentage: u0,
+      is-tier-active: false,
+    }
+      (map-get? volume-discount-configuration {
+        product-identifier: product-id,
+        minimum-quantity-threshold: purchase-quantity,
+      })
+    )
+    {
+      discount-percentage: u0,
+      is-tier-active: false,
+    }
+  )
+)
