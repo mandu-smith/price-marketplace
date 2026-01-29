@@ -76,3 +76,46 @@
     discount-percentage-applied: uint,
   }
 )
+
+;; CONTRACT STATE VARIABLES
+
+(define-data-var marketplace-owner-address principal tx-sender)
+(define-data-var is-marketplace-operational bool true)
+(define-data-var next-available-product-id uint u1)
+(define-data-var next-available-transaction-id uint u1)
+(define-data-var total-marketplace-revenue uint u0)
+(define-data-var total-completed-transactions uint u0)
+
+;; INPUT VALIDATION UTILITIES
+
+(define-private (validate-product-identifier (product-id uint))
+  (and
+    (>= product-id u1)
+    (< product-id (var-get next-available-product-id))
+  )
+)
+
+(define-private (validate-quantity-amount (quantity uint))
+  (and
+    (>= quantity minimum-quantity-amount)
+    (<= quantity maximum-quantity-per-order)
+  )
+)
+
+(define-private (validate-price-amount (price uint))
+  (and
+    (>= price minimum-price-amount)
+    (<= price maximum-price-per-unit)
+  )
+)
+
+(define-private (validate-discount-percentage (discount uint))
+  (<= discount maximum-discount-percentage)
+)
+
+(define-private (validate-product-name (name (string-ascii 64)))
+  (and
+    (>= (len name) minimum-product-name-length)
+    (<= (len name) maximum-product-name-length)
+  )
+)
