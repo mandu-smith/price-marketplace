@@ -234,3 +234,39 @@
     (err ERR-PRODUCT-NOT-FOUND)
   )
 )
+
+;; PRODUCT CATALOG MANAGEMENT
+
+(define-public (register-new-product
+    (product-name (string-ascii 64))
+    (unit-price uint)
+    (initial-stock uint)
+  )
+  (begin
+    ;; Permission and operational validations
+    (asserts! (validate-owner-permissions) ERR-UNAUTHORIZED-ACCESS)
+    (asserts! (validate-marketplace-operational) ERR-MARKETPLACE-LOCKED)
+
+    ;; Input parameter validations
+    (asserts! (validate-product-name product-name) ERR-INVALID-PRODUCT-NAME)
+    (asserts! (validate-price-amount unit-price) ERR-INVALID-PRICE-AMOUNT)
+    (asserts! (validate-quantity-amount initial-stock)
+      ERR-INVALID-QUANTITY-REQUESTED
+    )
+
+    ;; Create new product entry
+    (let ((current-product-id (var-get next-available-product-id)))
+      (map-set marketplace-product-catalog { product-identifier: current-product-id } {
+        product-name: product-name,
+        unit-price: unit-price,
+        stock-quantity: initial-stock,
+        is-active: true,
+      })
+
+      ;; Update product identifier counter
+      (var-set next-available-product-id (+ current-product-id u1))
+
+      (ok current-product-id)
+    )
+  )
+)
