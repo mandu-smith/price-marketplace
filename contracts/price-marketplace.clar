@@ -157,3 +157,42 @@
     }
   )
 )
+
+(define-read-only (calculate-final-order-price
+    (product-id uint)
+    (requested-quantity uint)
+  )
+  (if (and (validate-product-identifier product-id) (validate-quantity-amount requested-quantity))
+    (match (get-product-details product-id)
+      product-info (let (
+          (base-unit-price (get unit-price product-info))
+          (volume-discount-info (get-applicable-volume-discount product-id requested-quantity))
+          (applicable-discount-rate (get discount-percentage volume-discount-info))
+          (discount-multiplier (- u100 applicable-discount-rate))
+          (subtotal-amount (* base-unit-price requested-quantity))
+          (final-discounted-price (/ (* subtotal-amount discount-multiplier) u100))
+        )
+        (ok {
+          base-unit-price: base-unit-price,
+          quantity-ordered: requested-quantity,
+          discount-percentage-applied: applicable-discount-rate,
+          final-total-price: final-discounted-price,
+          original-subtotal: subtotal-amount,
+        })
+      )
+      (err ERR-PRODUCT-NOT-FOUND)
+    )
+    (err ERR-INVALID-INPUT-PARAMETER)
+  )
+)
+
+(define-read-only (get-transaction-history (transaction-id uint))
+  (map-get? customer-transaction-records {
+    customer-address: tx-sender,
+    transaction-identifier: transaction-id,
+  })
+)
+
+(define-read-only (get-marketplace-owner-address)
+  (var-get marketplace-owner-address)
+)
