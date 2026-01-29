@@ -36,3 +36,43 @@
 (define-constant minimum-product-name-length u1)
 (define-constant minimum-quantity-amount u1)
 (define-constant minimum-price-amount u1)
+
+;; DATA STRUCTURES
+
+;; Core product information with inventory tracking
+(define-map marketplace-product-catalog
+  { product-identifier: uint }
+  {
+    product-name: (string-ascii 64),
+    unit-price: uint,
+    stock-quantity: uint,
+    is-active: bool,
+  }
+)
+
+;; Volume discount configuration for bulk purchasing incentives
+(define-map volume-discount-configuration
+  {
+    product-identifier: uint,
+    minimum-quantity-threshold: uint,
+  }
+  {
+    discount-percentage: uint,
+    is-tier-active: bool,
+  }
+)
+
+;; Customer transaction history for purchase tracking
+(define-map customer-transaction-records
+  {
+    customer-address: principal,
+    transaction-identifier: uint,
+  }
+  {
+    product-identifier: uint,
+    quantity-purchased: uint,
+    total-amount-paid: uint,
+    block-height-created: uint,
+    discount-percentage-applied: uint,
+  }
+)
